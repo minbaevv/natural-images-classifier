@@ -1,0 +1,34 @@
+import streamlit as st
+from PIL import Image
+import requests
+
+
+st.title("Natural Classification with Streamlit")
+
+api_url = 'http://127.0.0.1:8001/predict'
+
+uploaded_file = st.file_uploader('Загрузите изображение', type={'png', 'jpg', 'jpeg'})
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+
+    st.image(image, caption='Загруженное изображение', width=200)
+
+    if st.button('Pred'):
+        files = {'file': (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)}
+
+        try:
+            response = requests.post(api_url, files=files)
+
+            if response.status_code == 200:
+                result = response.json()
+                st.success(f"Предсказанная фото: {result['result']}")
+            else:
+                st.error(f"Ошибка API {response.text}")
+        except requests.exceptions.ConnectionError:
+            st.error("Не удалось подключиться к FastAPI серверу")
+
+        except Exception as e:
+            st.error(f"Произошла ошибка: {e}")
+
+
+
